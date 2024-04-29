@@ -1,28 +1,56 @@
 stages:
+  - lint
   - build
   - test
-  - sonarqube
+  - sonar-scan
+  - checkmarx-scan
   - deploy
+
+variables:
+  DOCKER_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  SONAR_PROJECT_KEY: "my_project"
+  CHECKMARX_PROJECT_NAME: "my_project"
+
+lint:
+  stage: lint
+  image: node:latest
+  script:
+    - npm install eslint -g
+    - eslint .
 
 build:
   stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker build -t $DOCKER_IMAGE_TAG .
 
 test:
   stage: test
+  image: node:latest
   script:
-    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG npm test
+    - npm install
+    - npm test
 
-sonarqube:
-  stage: sonarqube
+sonar-scan:
+  stage: sonar-scan
   image: sonarsource/sonar-scanner-cli:latest
   script:
-    - sonar-scanner -Dsonar.projectKey=my_project -Dsonar.sources=.
+    - sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=.
+
+checkmarx-scan:
+  stage: checkmarx-scan
+  image: checkmarx/cx-flow:latest
+  script:
+    - cx-flow scan -projectName $CHECKMARX_PROJECT_NAME -CxServer $CHECKMARX_SERVER -CxUser $CHECKMARX_USERNAME -CxPassword $CHECKMARX_PASSWORD
 
 deploy:
   stage: deploy
+  image: python:latest
   script:
-    - echo "Deploying to AWS ECS..."
-    # Add commands to deploy to AWS ECS here
+    - pip install awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+
