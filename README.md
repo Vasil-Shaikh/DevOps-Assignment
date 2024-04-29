@@ -5,4 +5,4 @@ Send a POST request to http://localhost:3000/generate with JSON payload containi
 
 # Example
 
-curl -X POST -H "Content-Type: application/json" -d '{"fields":["firstName","lastName","email","phoneNumber"],"count":10}' http://your-ecs-instance-ip/generate
+curl -X POST -H "Content-Type: application/json" -d '{"fields":["first_name","last_name","email","phone"],"count":10}' http://localhost:3000/generate
