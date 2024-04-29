@@ -1,5 +1,5 @@
-# DevOps-Assignment
-This repo contains files for DevOps Assignment
+# DevOps-Assignment - Dummy Data App
+This repo contains files for DevOps Assignment 
 
 Send a POST request to http://localhost:3000/generate with JSON payload containing the fields and count parameters.
 
