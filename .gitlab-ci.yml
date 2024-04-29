@@ -5,6 +5,7 @@ stages:
   - sonar-scan
   - checkmarx-scan
   - deploy
+  - e2e-test
 
 variables:
   DOCKER_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
@@ -54,3 +55,8 @@ deploy:
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
     - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
 
+e2e-test:
+  stage: e2e-test
+  image: node:latest
+  script:
+    - <e2e test script using Cypress can be added>
