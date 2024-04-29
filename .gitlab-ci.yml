@@ -1,0 +1,28 @@
+stages:
+  - build
+  - test
+  - sonarqube
+  - deploy
+
+build:
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+test:
+  stage: test
+  script:
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG npm test
+
+sonarqube:
+  stage: sonarqube
+  image: sonarsource/sonar-scanner-cli:latest
+  script:
+    - sonar-scanner -Dsonar.projectKey=my_project -Dsonar.sources=.
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying to AWS ECS..."
+    # Add commands to deploy to AWS ECS here
